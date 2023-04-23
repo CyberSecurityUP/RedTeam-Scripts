@@ -11,7 +11,7 @@ sub powershell_execute {
 sub modify_userinit {
     local('$CustomExePath $script');
 
-    $CustomExePath = "C:\caminho\para\o\arquivo.exe";
+    $CustomExePath = "C:\arquivo.exe";
     $script = qq{
         \$CustomExePath = "$CustomExePath";
         if (Test-Path \$CustomExePath) {
